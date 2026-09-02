@@ -1,8 +1,9 @@
 {
   "name": "7Doses - ยา 7 เม็ด บันทึกการปฏิบัติธรรม",
-  "short_name": "ยา 7 เม็ด",
-  "description": "แอปพลิเคชันสำหรับบันทึกและติดตามการปฏิบัติธรรม 7 ขั้นตอน เพื่อความเพียรที่ต่อเนื่องและมั่นคง",
-  "start_url": "/dashboard",
+  "short_name": "7Doses",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FAF8F5",
@@ -12,13 +13,25 @@
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
