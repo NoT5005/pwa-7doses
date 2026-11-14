@@ -23,7 +23,13 @@ import {
   checkCountUpChime,
   calculateRemainingSeconds,
   finalizePracticeSession,
+  pausePracticeSession,
+  resumePracticeSession,
+  isSessionPaused,
+  calculateSessionDisplayState,
 } from '../src/lib/services/timer';
+
+import { APP_VERSION } from '../src/lib/version';
 
 import { PracticeSummary, PracticeSession, PracticeStep, MASTER_PRACTICE_STEPS } from '../src/types/index';
 
@@ -263,5 +269,45 @@ describe('Timer and Chime Interval Detection', () => {
     assert.strictEqual(finalized.duration_seconds, 1800);
     assert.strictEqual(finalized.session_status, 'completed');
     assert.strictEqual(finalized.result_note, 'รู้สึกสงบ');
+  });
+
+  it('pauses, freezes time accurately, resumes, and finalizes exact active seconds', () => {
+    const tenMinsAgo = new Date(Date.now() - 600_000).toISOString();
+    const runningSession: PracticeSession = {
+      id: 10,
+      user_id: 'user-1',
+      practice_summary_id: 101,
+      practice_date: '2026-11-14',
+      started_at: tenMinsAgo,
+      ended_at: null,
+      duration_seconds: 0,
+      source: 'timer',
+      timer_mode: 'count_up',
+      session_status: 'running',
+      created_at: tenMinsAgo,
+      updated_at: tenMinsAgo,
+    };
+
+    const paused = pausePracticeSession(runningSession);
+    assert.strictEqual(isSessionPaused(paused), true);
+    assert.strictEqual(paused.started_at, null);
+    assert.ok(paused.duration_seconds >= 600 && paused.duration_seconds <= 602);
+
+    const pausedDisplay = calculateSessionDisplayState(paused);
+    assert.strictEqual(pausedDisplay.isPaused, true);
+    assert.strictEqual(pausedDisplay.displaySeconds, paused.duration_seconds);
+
+    const resumed = resumePracticeSession(paused);
+    assert.strictEqual(isSessionPaused(resumed), false);
+    assert.notStrictEqual(resumed.started_at, null);
+    assert.strictEqual(resumed.duration_seconds, paused.duration_seconds);
+
+    const finalizedFromPaused = finalizePracticeSession(paused, 'พักแล้วหยุดบันทึก');
+    assert.strictEqual(finalizedFromPaused.duration_seconds, paused.duration_seconds);
+    assert.strictEqual(finalizedFromPaused.session_status, 'completed');
+  });
+
+  it('exports system version 1.01', () => {
+    assert.strictEqual(APP_VERSION, '1.01');
   });
 });

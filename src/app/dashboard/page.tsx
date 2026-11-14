@@ -27,6 +27,7 @@ import {
   Layers,
   Sparkles,
   BarChart3,
+  UploadCloud,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -36,8 +37,13 @@ export default function DashboardPage() {
     allSummaries,
     practiceSessions,
     effortSettings,
+    runningSession,
+    isDemoMode,
+    hasLocalUnsyncedData,
+    importLocalDataToCloud,
     isLoading,
   } = useStore();
+  const [importingLocal, setImportingLocal] = useState(false);
 
   const [periodType, setPeriodType] = useState<PeriodType>('month');
   const [anchorDate, setAnchorDate] = useState<Date>(new Date());
@@ -103,6 +109,57 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-5 animate-fade-in pb-8">
+      {/* Resume Active Practice Banner */}
+      {runningSession && (
+        <Link
+          href="/practice"
+          className="block p-4 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white shadow-md transition-all active:scale-[0.99]"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 rounded-full bg-emerald-300 animate-pulse" />
+              <span className="text-sm font-bold">
+                {runningSession.started_at
+                  ? 'กำลังจับเวลาปฏิบัติธรรมอยู่'
+                  : 'พักการปฏิบัติธรรมชั่วคราว'}
+              </span>
+            </div>
+            <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-white/20">
+              กลับสู่หน้าจับเวลา →
+            </span>
+          </div>
+        </Link>
+      )}
+
+      {/* Local-to-Cloud Import Prompt */}
+      {!isDemoMode && hasLocalUnsyncedData && (
+        <div className="p-4 rounded-3xl bg-amber-50 border border-amber-200 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <UploadCloud className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
+            <div className="text-xs">
+              <p className="font-bold text-amber-900">
+                พบข้อมูลการปฏิบัติเดิมในเครื่องนี้ที่ยังไม่ได้ซิงค์
+              </p>
+              <p className="text-amber-800 mt-0.5">
+                กดปุ่มด้านขวาเพื่อนำข้อมูลเดิมขึ้นบัญชี Google ของท่านให้แสดงตรงกันทุกเครื่อง
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={importingLocal}
+            onClick={async () => {
+              setImportingLocal(true);
+              await importLocalDataToCloud();
+              setImportingLocal(false);
+            }}
+            className="min-h-[42px] px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95 disabled:opacity-50 flex-shrink-0"
+          >
+            {importingLocal ? 'กำลังซิงค์...' : 'ซิงค์ข้อมูลเดิมขึ้น Cloud'}
+          </button>
+        </div>
+      )}
+
       {/* 1. Header Greeting & Current Step Card */}
       <div className="bg-gradient-to-br from-primary-800 to-primary-900 text-white rounded-3xl p-5 sm:p-6 shadow-elevated relative overflow-hidden">
         <div className="absolute right-0 top-0 w-32 h-32 bg-white/5 rounded-full blur-2xl pointer-events-none" />

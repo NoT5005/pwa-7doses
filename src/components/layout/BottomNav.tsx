@@ -8,8 +8,8 @@ import { Home, Play, History, Layers, Settings } from 'lucide-react';
 export const BottomNav: React.FC = () => {
   const pathname = usePathname();
 
-  // Hide nav on login or onboarding pages
-  if (pathname === '/login' || pathname === '/onboarding') {
+  // Hide nav on login, callback, or onboarding pages
+  if (pathname === '/login' || pathname === '/onboarding' || pathname === '/auth/callback') {
     return null;
   }
 

@@ -9,12 +9,22 @@ export default function HomePage() {
   const { user, isLoading } = useStore();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        router.replace('/dashboard');
-      } else {
-        router.replace('/dashboard'); // Local/Demo mode enters dashboard directly
+    if (isLoading) return;
+
+    // Wait if OAuth hash/code is still present in URL on initial frame
+    if (typeof window !== 'undefined') {
+      const hasOAuthParams =
+        window.location.hash.includes('access_token=') ||
+        window.location.search.includes('code=');
+      if (hasOAuthParams && !user) {
+        return;
       }
+    }
+
+    if (user) {
+      router.replace('/dashboard');
+    } else {
+      router.replace('/login');
     }
   }, [user, isLoading, router]);
 

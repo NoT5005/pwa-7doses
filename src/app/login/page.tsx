@@ -1,31 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/supabase/store';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { APP_VERSION } from '@/lib/version';
+import { ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signInWithGoogle, isOnlineBackend } = useStore();
+  const { user, isLoading, signInWithGoogle, enterDemoMode, isOnlineBackend } = useStore();
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [user, isLoading, router]);
 
   const handleGoogleLogin = async () => {
+    setErrorMsg(null);
+    if (!isOnlineBackend) {
+      setErrorMsg(
+        'ยังไม่ได้ตั้งค่าการเชื่อมต่อฐานข้อมูล (NEXT_PUBLIC_SUPABASE_URL) บนเซิร์ฟเวอร์ กรุณาตรวจสอบ Environment Variables หรือเลือกโหมดออฟไลน์'
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       await signInWithGoogle();
-      if (!isOnlineBackend) {
-        router.push('/dashboard');
-      }
     } catch (err) {
       console.error(err);
-    } finally {
+      setErrorMsg('ไม่สามารถเข้าสู่ระบบด้วย Google ได้ กรุณาลองใหม่อีกครั้ง');
       setLoading(false);
     }
   };
 
   const handleDemoMode = () => {
+    enterDemoMode();
     router.push('/dashboard');
   };
 
@@ -49,15 +63,22 @@ export default function LoginPage() {
         7Doses (ยา 7 เม็ด)
       </p>
       <p className="text-stone-500 text-sm max-w-sm mb-8 leading-relaxed">
-        เครื่องมือช่วยจัดสรรเวลา เจริญสติ และติดตามความเพียรในการปฏิบัติธรรม 7 ขั้นตอนอย่างต่อเนื่อง
+        เข้าสู่ระบบด้วยบัญชี Google เพื่อบันทึกและซิงค์ข้อมูลการปฏิบัติธรรมข้ามอุปกรณ์อย่างต่อเนื่อง
       </p>
+
+      {errorMsg && (
+        <div className="w-full max-w-xs mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium text-left flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="w-full max-w-xs space-y-3">
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full min-h-[52px] px-6 py-3.5 rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-bold border-2 border-stone-200 shadow-sm flex items-center justify-center gap-3 transition-all active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:opacity-50"
+          className="w-full min-h-[54px] px-6 py-3.5 rounded-2xl bg-white hover:bg-stone-50 text-stone-800 font-bold border-2 border-stone-200 shadow-sm flex items-center justify-center gap-3 transition-all active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:opacity-50"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -77,21 +98,22 @@ export default function LoginPage() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>เข้าสู่ระบบด้วย Google</span>
+          <span>{loading ? 'กำลังเปิดหน้า Google...' : 'เข้าสู่ระบบด้วย Google'}</span>
         </button>
 
         <button
           onClick={handleDemoMode}
           className="w-full min-h-[48px] px-6 py-2.5 rounded-2xl bg-primary-50 hover:bg-primary-100 text-primary-800 font-semibold text-sm border border-primary-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
-          <span>ทดลองใช้งานทันที (ออฟไลน์)</span>
+          <span>ทดลองใช้งานเฉพาะในเครื่อง (ออฟไลน์)</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Footer advice */}
-      <div className="mt-12 text-xs text-stone-400">
+      {/* Footer & Version */}
+      <div className="mt-12 space-y-1 text-xs text-stone-400">
         <p>พัฒนาขึ้นเพื่อความสงบแห่งจิตใจและความเพียรอันบริสุทธิ์</p>
+        <p className="font-semibold text-stone-400/90">Version {APP_VERSION}</p>
       </div>
     </div>
   );

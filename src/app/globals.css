@@ -36,6 +36,18 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Native modal dialog scroll containment */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgb(0 0 0 / 0.6);
+  backdrop-filter: blur(4px);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
